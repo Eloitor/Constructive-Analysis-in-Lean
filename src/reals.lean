@@ -20,11 +20,6 @@ lemma real_equivalent_symm {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b) 
     rwa [←abs_neg, this],
   end
 
-/-instance jaja : ordered_semiring ℕ :=
-  begin
-    exact nat.ordered_semiring,
-  end-/
-
 lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b): 
     (a ∼ b) ↔ (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | a n - b n | ≤ (j: ℚ)⁻¹) :=
   begin
@@ -32,7 +27,6 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
     { intros h_eq j h_j_pos,
       use 2 * j,
       intros n h_n_ge_two_j,
-      unfold equivalent at h_eq,
       specialize h_eq n _,
       { obtain h2j:= (le_mul_iff_one_le_left h_j_pos).2 one_le_two,
         exact gt_of_ge_of_gt h_n_ge_two_j (gt_of_ge_of_gt h2j h_j_pos) },
@@ -42,8 +36,7 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
         { simp only [inv_inv₀],
           obtain tt := nat.cast_le.mpr h_n_ge_two_j,
           norm_num at tt,
-          exact tt,
-          exact rat.nontrivial },
+          exacts [tt, rat.nontrivial]},
         { rw [inv_pos, nat.cast_pos],
           exact gt_of_ge_of_gt h_n_ge_two_j h2j },
         { simp only [zero_lt_bit0, zero_lt_mul_left, nat.cast_pos, zero_lt_one, h_j_pos] } },
