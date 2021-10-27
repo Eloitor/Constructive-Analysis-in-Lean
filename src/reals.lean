@@ -34,62 +34,27 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
       intros n h_n_ge_two_j,
       unfold equivalent at h_eq,
       specialize h_eq n _,
-      {
-        calc 0 < j : h_j_pos
-          ... ≤ 2*j : by { rw le_mul_iff_one_le_left, exact one_le_two, assumption }
-          ... ≤ n : h_n_ge_two_j,
-      },
+      { obtain h2j:= (le_mul_iff_one_le_left h_j_pos).2 one_le_two,
+        exact gt_of_ge_of_gt h_n_ge_two_j (gt_of_ge_of_gt h2j h_j_pos) },
       have : (n : ℚ)⁻¹ ≤ (2*j : ℚ)⁻¹,
-      {
-        have h2j : 0 < 2 * j,
-          {
-            exact nat.succ_mul_pos 1 h_j_pos,
-          },
+      { obtain h2j := nat.succ_mul_pos 1 h_j_pos,
         rw le_inv,
-        {
-          simp*,
-          obtain := λ x, rat.of_int (int.of_nat x),
-          have : ∀ (a b : ℕ), a ≤ b → (a : ℚ) ≤ (b : ℚ),
-          {
-            intros a b h,
-            exact nat.cast_le.mpr h
-          },
-          suffices t : 2 * j ≤ n,
-          {
-            obtain tt := nat.cast_le.mpr h_n_ge_two_j,
-            norm_num at tt,
-            exact tt,
-            exact rat.nontrivial,
-          },
-          exact h_n_ge_two_j,
-        },
-        {
-          simp*,
-          exact gt_of_ge_of_gt h_n_ge_two_j h2j,
-        },
-        {
-          simpa,
-        },
-      },
+        { simp only [inv_inv₀],
+          obtain tt := nat.cast_le.mpr h_n_ge_two_j,
+          norm_num at tt,
+          exact tt,
+          exact rat.nontrivial },
+        { rw [inv_pos, nat.cast_pos],
+          exact gt_of_ge_of_gt h_n_ge_two_j h2j },
+        { simp only [zero_lt_bit0, zero_lt_mul_left, nat.cast_pos, zero_lt_one, h_j_pos] } },
       have : (n : ℚ)⁻¹ * 2 ≤ (j : ℚ)⁻¹,
-      {
-        have t : (n : ℚ)⁻¹ * 2 ≤ (2*j : ℚ)⁻¹ * 2,
-        {
-          simp only [this, mul_le_mul_right, zero_lt_bit0, zero_lt_one],
-        },
-        have tt : (2*j : ℚ)⁻¹ * 2 = (j : ℚ)⁻¹,
-        {
-          have m : (2*j : ℚ)⁻¹ = 2⁻¹ * (j : ℚ)⁻¹,
-          {
-            exact mul_inv₀
-          },
-          rw [m],
-          ring,
-        },
-        rwa ← tt,
-      },
-      exact le_trans h_eq this,
-    },
+      { haveI : (n : ℚ)⁻¹ * 2 ≤ (2*j : ℚ)⁻¹ * 2,
+        { simp only [this, mul_le_mul_right, zero_lt_bit0, zero_lt_one] },
+        have hjeq : (2*j : ℚ)⁻¹ * 2 = (j : ℚ)⁻¹,
+        { rw [mul_inv₀],
+          ring },
+        rwa ← hjeq },
+      exact le_trans h_eq this },
     { 
      -- cases h_a with ha_regular,
      -- cases h_b with hb_regular,
