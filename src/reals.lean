@@ -51,8 +51,11 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
                    ... = (↑j)⁻¹ :  by { rw [mul_inv₀], ring, },
     },
     { 
-     -- cases h_a with ha_regular,
-     -- cases h_b with hb_regular,
+      intros h_eq n n_pos,
+      have key: ∀ j: ℕ, 0 < j → |a n - b n| < 2 * (n: ℚ)⁻¹ + 3 * (j: ℚ)⁻¹,
+      {
+        by sorry,
+      },
       sorry,
     },
   end
