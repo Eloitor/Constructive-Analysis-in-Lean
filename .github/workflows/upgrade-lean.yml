@@ -1,6 +1,6 @@
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 2 * * *' # once a day at 2am UTC
 
 jobs:
   upgrade_lean:
@@ -14,5 +14,3 @@ jobs:
         with:
           repo: ${{ github.repository }}
           access-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: update version branches
-        uses: leanprover-contrib/update-versions-action@master
