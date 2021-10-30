@@ -24,30 +24,32 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
     (a ∼ b) ↔ (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | a n - b n | ≤ (j: ℚ)⁻¹) :=
   begin
     split,
-    { intros h_eq j h_j_pos,
+    { intros h_eq j j_pos,
       use 2 * j,
-      intros n h_n_ge_two_j,
-      specialize h_eq n _,
-      { obtain h2j:= (le_mul_iff_one_le_left h_j_pos).2 one_le_two,
-        exact gt_of_ge_of_gt h_n_ge_two_j (gt_of_ge_of_gt h2j h_j_pos) },
-      have : (n : ℚ)⁻¹ ≤ (2*j : ℚ)⁻¹,
-      { obtain h2j := nat.succ_mul_pos 1 h_j_pos,
-        rw le_inv,
+      intros n n_ge_two_j,
+      have n_pos: 0 < n,
+        { have j_le_2j: j ≤ 2 * j := (le_mul_iff_one_le_left j_pos).2 one_le_two,
+          exact gt_of_ge_of_gt n_ge_two_j (gt_of_ge_of_gt j_le_2j j_pos),},
+      specialize h_eq n n_pos,
+
+      have n_inv_pos: 0 < (n : ℚ)⁻¹,
+        {rw [inv_pos, nat.cast_pos], exact n_pos,},
+
+      have n_inv_le: (n : ℚ)⁻¹ ≤ (2*j : ℚ)⁻¹,
+      { 
+        rw le_inv n_inv_pos,
         { simp only [inv_inv₀],
-          obtain tt := nat.cast_le.mpr h_n_ge_two_j,
-          norm_num at tt,
-          exacts [tt, rat.nontrivial]},
-        { rw [inv_pos, nat.cast_pos],
-          exact gt_of_ge_of_gt h_n_ge_two_j h2j },
-        { simp only [zero_lt_bit0, zero_lt_mul_left, nat.cast_pos, zero_lt_one, h_j_pos] } },
-      have : (n : ℚ)⁻¹ * 2 ≤ (j : ℚ)⁻¹,
-      { haveI : (n : ℚ)⁻¹ * 2 ≤ (2*j : ℚ)⁻¹ * 2,
-        { simp only [this, mul_le_mul_right, zero_lt_bit0, zero_lt_one] },
-        have hjeq : (2*j : ℚ)⁻¹ * 2 = (j : ℚ)⁻¹,
-        { rw [mul_inv₀],
-          ring },
-        rwa ← hjeq },
-      exact le_trans h_eq this },
+          norm_cast,
+          exact n_ge_two_j },
+        { norm_cast,
+          exact nat.succ_mul_pos 1 j_pos},
+      },
+  
+      calc |a n - b n| ≤ (↑n)⁻¹ * 2: h_eq
+                   ... ≤ (2*j)⁻¹ * 2 : by 
+                    { simp only [n_inv_le, mul_le_mul_right, zero_lt_bit0, zero_lt_one], }
+                   ... = (↑j)⁻¹ :  by { rw [mul_inv₀], ring, },
+    },
     { 
      -- cases h_a with ha_regular,
      -- cases h_b with hb_regular,
