@@ -63,5 +63,29 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
 lemma real_equivalent_trans {a b c : ℕ → ℚ} (h_a: regular a) (h_b: regular b) (h_c: regular c)
     (h_eq_ab: a ∼ b) (h_eq_bc: b ∼ c): a ∼ c :=
   begin
-    sorry,
+    rw real_equivalent_iff h_a h_b at h_eq_ab,
+    rw real_equivalent_iff h_b h_c at h_eq_bc,
+    rw real_equivalent_iff h_a h_c,
+    intros j j_pos,
+    have two_j_pos: 2 * j > 0,
+      { exact nat.succ_mul_pos 1 j_pos },
+    specialize h_eq_ab (2*j) two_j_pos,
+    specialize h_eq_bc (2*j) two_j_pos,
+    obtain ⟨N, h_N⟩ := h_eq_ab,
+    obtain ⟨M, h_M⟩ := h_eq_bc,
+    use max N M,
+    intros n n_ge_max,
+    have n_ge_N: n ≥ N,
+      { exact le_of_max_le_left n_ge_max },
+    have n_ge_M: n ≥ M,
+      { exact le_of_max_le_right n_ge_max },
+    
+    specialize h_N n n_ge_N,
+    specialize h_M n n_ge_M,
+    calc |a n - c n| ≤ |(a n - b n) + (b n - c n)| : by simp
+                 ... ≤ |a n - b n| + |b n - c n| : abs_add _ _
+                 ... ≤ |a n - b n| + (↑(2*j))⁻¹ : add_le_add_left h_M (|a n - b n|)
+                 ... ≤ (↑(2*j))⁻¹ + (↑(2*j))⁻¹ : add_le_add_right h_N (↑(2*j))⁻¹
+                 ... = (j: ℚ)⁻¹ : by { push_cast, rw mul_inv₀, ring}
+  
   end
