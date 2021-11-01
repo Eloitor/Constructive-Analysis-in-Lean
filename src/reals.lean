@@ -1,22 +1,22 @@
 import data.rat
 
-structure real :=
+structure regular_sequence :=
   (seq: ℕ → ℚ)
   (regularity {m n: ℕ} (h_m: 0 < m) (h_n: 0 < n): |seq m - seq n| ≤ (m : ℚ)⁻¹ + (n : ℚ)⁻¹)
 
-namespace real
+namespace regular_sequence
 
-def equivalent(a b: real) :=
+def equivalent(a b: regular_sequence) :=
   ∀ n : ℕ, 0 < n → |a.seq n - b.seq n| ≤ 2 * (n : ℚ)⁻¹
 
 -- We introduce the `≈` notation to denote equivalence.
-instance : has_equiv real :=
+instance : has_equiv regular_sequence :=
   ⟨equivalent⟩
 
-lemma equivalent_refl (a: real): a ≈ a :=
+lemma equivalent_refl (a: regular_sequence): a ≈ a :=
   λ n h_n, by simp [a.regularity h_n]
 
-lemma equivalent_symm: symmetric real.equivalent :=
+lemma equivalent_symm: symmetric regular_sequence.equivalent :=
   begin
     intros a b h_eq n h_n,
     specialize h_eq n h_n,
@@ -25,9 +25,8 @@ lemma equivalent_symm: symmetric real.equivalent :=
     rwa [←abs_neg, this],
   end
 
-    -- What is the proper way to write a ≈ b instead of a.equivalent b?
-lemma equivalent_iff {a b: real}: 
-    (a.equivalent b) ↔ (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | a.seq n - b.seq n | ≤ (j: ℚ)⁻¹) :=
+lemma equivalent_iff {a b: regular_sequence}: 
+    (a ≈ b) ↔ (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | a.seq n - b.seq n | ≤ (j: ℚ)⁻¹) :=
   begin
     split,
     { intros h_eq j j_pos,
@@ -85,10 +84,13 @@ lemma equivalent_iff {a b: real}:
     },
   end
 
-lemma equivalent_trans: transitive real.equivalent :=
+lemma equivalent_trans: transitive regular_sequence.equivalent :=
   begin
     intros a b c h_eq_ab h_eq_bc,
-    rw [real.equivalent_iff] at *,
+    change a ≈ c,
+    change a ≈ b at h_eq_ab,
+    change b ≈ c at h_eq_bc,
+    rw [regular_sequence.equivalent_iff] at *,
     intros j j_pos,
     have two_j_pos: 2 * j > 0,
       { exact nat.succ_mul_pos 1 j_pos },
@@ -112,17 +114,23 @@ lemma equivalent_trans: transitive real.equivalent :=
   
   end
 
-lemma is_equivalence: equivalence real.equivalent :=
+lemma is_equivalence: equivalence regular_sequence.equivalent :=
   ⟨equivalent_refl, equivalent_symm, equivalent_trans⟩
 
-instance real_setoid: setoid real :=
+instance setoid: setoid regular_sequence :=
   setoid.mk equivalent is_equivalence
 
-
-def canonical_bound(x : real): ℕ :=
+def canonical_bound(x : regular_sequence): ℕ :=
   nat.ceil (x.seq 1) + 2
 
-def of_rat(x: ℚ): real :=
+end regular_sequence
+
+def real := quotient regular_sequence.setoid
+#check real
+
+open regular_sequence
+
+def of_rat(x: ℚ): regular_sequence :=
   { seq := λ n, x,
   regularity := 
   begin
@@ -139,12 +147,45 @@ def of_rat(x: ℚ): real :=
 }
 
 instance : has_coe ℚ real:=
-  ⟨of_rat⟩
+  { coe := λ x, ⟦of_rat x⟧ }
 
 instance : has_zero real :=
-  ⟨of_rat 0⟩
+  ⟨ ⟦of_rat 0⟧ ⟩
 
-def add (a b: real): real :=
+
+def regular_sequence.neg (a: regular_sequence): real :=
+begin
+  apply quotient.mk,
+  fconstructor,
+  {
+    intro n,
+    exact - a.seq n,
+  },
+  intros,
+  rw ←abs_neg,
+  simp,
+  revert m n h_m h_n,
+  exact a.regularity,
+end
+
+def real_neg (a: real): real :=
+  quotient.lift regular_sequence.neg (λ a b h_eq,
+  begin
+    unfold regular_sequence.neg,
+    simp only [quotient.eq],
+    rw regular_sequence.equivalent_iff at *,
+    intros j j_pos,
+    specialize h_eq j j_pos,
+    obtain ⟨N, h_N⟩ := h_eq,
+    use N,
+    intros n n_ge_N,
+    specialize h_N n n_ge_N,
+    rw ←abs_neg,
+    simp,
+    assumption,
+  end) a
+
+def add (a b: regular_sequence): regular_sequence :=
   { seq := λ n, a.seq (2*n) + b.seq (2*n),
     regularity := 
     begin
@@ -165,8 +206,3 @@ def add (a b: real): real :=
       ... = (↑m)⁻¹ + (↑n)⁻¹ : by { push_cast, rw mul_inv₀, simp, norm_num, ring_nf, simp, rw mul_inv₀, ring,},
     end
   }
-
-instance : has_add real :=
-  ⟨add⟩
-
-end real
