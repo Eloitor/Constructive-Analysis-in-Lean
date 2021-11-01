@@ -4,7 +4,7 @@ structure regular(a : ℕ → ℚ) :=
   (regularity {m n: ℕ} (h_m: 0 < m) (h_n: 0 < n): |a m - a n | ≤ (m : ℚ)⁻¹ + (n : ℚ)⁻¹)
 
 def equivalent(a: ℕ → ℚ) (b: ℕ → ℚ) :=
-  ∀ n : ℕ, 0 < n → |a n - b n| ≤ (n : ℚ)⁻¹ * 2
+  ∀ n : ℕ, 0 < n → |a n - b n| ≤ 2 * (n : ℚ)⁻¹
 
 notation a `∼` b := equivalent a b
 
@@ -45,18 +45,37 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
           exact nat.succ_mul_pos 1 j_pos},
       },
   
-      calc |a n - b n| ≤ (↑n)⁻¹ * 2: h_eq
-                   ... ≤ (2*j)⁻¹ * 2 : by 
-                    { simp only [n_inv_le, mul_le_mul_right, zero_lt_bit0, zero_lt_one], }
-                   ... = (↑j)⁻¹ :  by { rw [mul_inv₀], ring, },
+      calc |a n - b n| ≤ 2*(↑n)⁻¹: h_eq
+                   ... ≤ 2*(2*j)⁻¹ : by simp only [n_inv_le, mul_le_mul_left, zero_lt_bit0, zero_lt_one]
+                   ... = (↑j)⁻¹ :  by { rw [mul_inv₀], ring},
     },
     { 
       intros h_eq n n_pos,
-      have key: ∀ j: ℕ, 0 < j → |a n - b n| < 2 * (n: ℚ)⁻¹ + 3 * (j: ℚ)⁻¹,
+      have key: ∀ j: ℕ, 0 < j → |a n - b n| < 2*(n: ℚ)⁻¹ + 3 * (j: ℚ)⁻¹,
       {
-        by sorry,
+        intros j j_pos,
+        obtain ⟨Nj, h_Nj⟩  := h_eq j j_pos,
+        let m := max j Nj,
+        calc |a n - b n| = |(a n - a m) + ((a m - b m) + (b m - b n))| : by ring_nf
+                     ... ≤ |a n - a m| + |(a m - b m) + (b m - b n)| : abs_add _ _
+                     ... ≤ |a n - a m| + |a m - b m| + |b m - b n| : by sorry
+                     ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + (j: ℚ)⁻¹ + (n: ℚ)⁻¹ + (m: ℚ)⁻¹ : by sorry
+                     ... < 2*(↑n)⁻¹ + 3*(↑j)⁻¹: 
+                      begin
+                        sorry,
+                      end,
       },
-      sorry,
+      apply le_of_forall_pos_le_add,
+      intros ε ε_pos,
+      apply le_of_lt,
+      have : ∃ j: ℕ, 0 < j ∧ 3*(j: ℚ)⁻¹ ≤ ε,
+      {
+        sorry,
+      },
+      obtain ⟨j, j_pos, j_lt_ε⟩ := this,
+      specialize key j j_pos,
+      calc |a n - b n| < 2 * (↑n)⁻¹ + 3 * (↑j)⁻¹ : key
+                    ... ≤ 2 * (↑n)⁻¹ + ε : add_le_add_left j_lt_ε _
     },
   end
 
@@ -89,3 +108,5 @@ lemma real_equivalent_trans {a b c : ℕ → ℚ} (h_a: regular a) (h_b: regular
                  ... = (j: ℚ)⁻¹ : by { push_cast, rw mul_inv₀, ring}
   
   end
+
+
