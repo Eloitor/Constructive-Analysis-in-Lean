@@ -1,27 +1,33 @@
 import data.rat
 
-structure regular(a : ℕ → ℚ) :=
-  (regularity {m n: ℕ} (h_m: 0 < m) (h_n: 0 < n): |a m - a n | ≤ (m : ℚ)⁻¹ + (n : ℚ)⁻¹)
+structure real :=
+  (seq: ℕ → ℚ)
+  (regularity {m n: ℕ} (h_m: 0 < m) (h_n: 0 < n): |seq m - seq n| ≤ (m : ℚ)⁻¹ + (n : ℚ)⁻¹)
 
-def equivalent(a: ℕ → ℚ) (b: ℕ → ℚ) :=
-  ∀ n : ℕ, 0 < n → |a n - b n| ≤ 2 * (n : ℚ)⁻¹
+namespace real
 
-notation a `∼` b := equivalent a b
+def equivalent(a b: real) :=
+  ∀ n : ℕ, 0 < n → |a.seq n - b.seq n| ≤ 2 * (n : ℚ)⁻¹
 
-lemma real_equivalent_refl {a: ℕ → ℚ} (h_a: regular a): a ∼ a :=
-  λ n h_n, by simp [h_a.regularity h_n]
+-- We introduce the `≈` notation to denote equivalence.
+instance : has_equiv real :=
+  ⟨equivalent⟩
 
-lemma real_equivalent_symm {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b) (h_eq: a ∼ b): b ∼ a :=
-  λ n h_n,
+lemma equivalent_refl (a: real): a ≈ a :=
+  λ n h_n, by simp [a.regularity h_n]
+
+lemma equivalent_symm: symmetric real.equivalent :=
   begin
+    intros a b h_eq n h_n,
     specialize h_eq n h_n,
-    have : - (b n - a n) = (a n - b n),
+    have : - (b.seq n - a.seq n) = (a.seq n - b.seq n),
       by simp [h_eq],
     rwa [←abs_neg, this],
   end
 
-lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b): 
-    (a ∼ b) ↔ (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | a n - b n | ≤ (j: ℚ)⁻¹) :=
+    -- What is the proper way to write a ≈ b instead of a.equivalent b?
+lemma equivalent_iff {a b: real}: 
+    (a.equivalent b) ↔ (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | a.seq n - b.seq n | ≤ (j: ℚ)⁻¹) :=
   begin
     split,
     { intros h_eq j j_pos,
@@ -45,20 +51,20 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
           exact nat.succ_mul_pos 1 j_pos},
       },
   
-      calc |a n - b n| ≤ 2*(↑n)⁻¹: h_eq
+      calc |a.seq n - b.seq n| ≤ 2*(↑n)⁻¹: h_eq
                    ... ≤ 2*(2*j)⁻¹ : by simp only [n_inv_le, mul_le_mul_left, zero_lt_bit0, zero_lt_one]
                    ... = (↑j)⁻¹ :  by { rw [mul_inv₀], ring},
     },
     { 
       intros h_eq n n_pos,
-      have key: ∀ j: ℕ, 0 < j → |a n - b n| < 2*(n: ℚ)⁻¹ + 3 * (j: ℚ)⁻¹,
+      have key: ∀ j: ℕ, 0 < j → |a.seq n - b.seq n| < 2*(n: ℚ)⁻¹ + 3 * (j: ℚ)⁻¹,
       {
         intros j j_pos,
         obtain ⟨Nj, h_Nj⟩  := h_eq j j_pos,
         let m := max j Nj,
-        calc |a n - b n| = |(a n - a m) + ((a m - b m) + (b m - b n))| : by ring_nf
-                     ... ≤ |a n - a m| + |(a m - b m) + (b m - b n)| : abs_add _ _
-                     ... ≤ |a n - a m| + |a m - b m| + |b m - b n| : by sorry
+        calc |a.seq n - b.seq n| = |(a.seq n - a.seq m) + ((a.seq m - b.seq m) + (b.seq m - b.seq n))| : by ring_nf
+                     ... ≤ |a.seq n - a.seq m| + |(a.seq m - b.seq m) + (b.seq m - b.seq n)| : abs_add _ _
+                     ... ≤ |a.seq n - a.seq m| + |a.seq m - b.seq m| + |b.seq m - b.seq n| : by sorry
                      ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + (j: ℚ)⁻¹ + (n: ℚ)⁻¹ + (m: ℚ)⁻¹ : by sorry
                      ... < 2*(↑n)⁻¹ + 3*(↑j)⁻¹: 
                       begin
@@ -74,17 +80,15 @@ lemma real_equivalent_iff {a b: ℕ → ℚ} (h_a: regular a) (h_b: regular b):
       },
       obtain ⟨j, j_pos, j_lt_ε⟩ := this,
       specialize key j j_pos,
-      calc |a n - b n| < 2 * (↑n)⁻¹ + 3 * (↑j)⁻¹ : key
-                    ... ≤ 2 * (↑n)⁻¹ + ε : add_le_add_left j_lt_ε _
+      calc |a.seq n - b.seq n| < 2 * (↑n)⁻¹ + 3 * (↑j)⁻¹ : key
+                   ... ≤ 2 * (↑n)⁻¹ + ε : add_le_add_left j_lt_ε _
     },
   end
 
-lemma real_equivalent_trans {a b c : ℕ → ℚ} (h_a: regular a) (h_b: regular b) (h_c: regular c)
-    (h_eq_ab: a ∼ b) (h_eq_bc: b ∼ c): a ∼ c :=
+lemma equivalent_trans: transitive real.equivalent :=
   begin
-    rw real_equivalent_iff h_a h_b at h_eq_ab,
-    rw real_equivalent_iff h_b h_c at h_eq_bc,
-    rw real_equivalent_iff h_a h_c,
+    intros a b c h_eq_ab h_eq_bc,
+    rw [real.equivalent_iff] at *,
     intros j j_pos,
     have two_j_pos: 2 * j > 0,
       { exact nat.succ_mul_pos 1 j_pos },
@@ -101,12 +105,68 @@ lemma real_equivalent_trans {a b c : ℕ → ℚ} (h_a: regular a) (h_b: regular
     
     specialize h_N n n_ge_N,
     specialize h_M n n_ge_M,
-    calc |a n - c n| ≤ |(a n - b n) + (b n - c n)| : by simp
-                 ... ≤ |a n - b n| + |b n - c n| : abs_add _ _
-                 ... ≤ |a n - b n| + (↑(2*j))⁻¹ : add_le_add_left h_M (|a n - b n|)
-                 ... ≤ (↑(2*j))⁻¹ + (↑(2*j))⁻¹ : add_le_add_right h_N (↑(2*j))⁻¹
-                 ... = (j: ℚ)⁻¹ : by { push_cast, rw mul_inv₀, ring}
+    calc |a.seq n - c.seq n| ≤ |(a.seq n - b.seq n) + (b.seq n - c.seq n)| : by simp
+                 ... ≤ |a.seq n - b.seq n| + |b.seq n - c.seq n| : abs_add _ _
+                 ... ≤ (↑(2*j))⁻¹ + (↑(2*j))⁻¹ : add_le_add h_N h_M
+                 ... = (j: ℚ)⁻¹ : by { push_cast, rw mul_inv₀, ring},
   
   end
 
+lemma is_equivalence: equivalence real.equivalent :=
+  ⟨equivalent_refl, equivalent_symm, equivalent_trans⟩
 
+instance real_setoid: setoid real :=
+  setoid.mk equivalent is_equivalence
+
+
+def canonical_bound(x : real): ℕ :=
+  nat.ceil (x.seq 1) + 2
+
+def of_rat(x: ℚ): real :=
+  { seq := λ n, x,
+  regularity := 
+  begin
+    intros,
+    simp [zero_le],
+    have : 0 < (m: ℚ)⁻¹,
+      { rw inv_pos, norm_cast, exact h_m},
+    have : 0 < (n: ℚ)⁻¹,
+      { rw inv_pos, norm_cast, exact h_n},
+    apply le_of_lt,
+    apply add_pos;
+    assumption,
+  end
+}
+
+instance : has_coe ℚ real:=
+  ⟨of_rat⟩
+
+instance : has_zero real :=
+  ⟨of_rat 0⟩
+
+def add (a b: real): real :=
+  { seq := λ n, a.seq (2*n) + b.seq (2*n),
+    regularity := 
+    begin
+      intros m n m_pos n_pos,
+      have two_m_pos: 0 < 2 * m,
+        { exact nat.succ_mul_pos 1 m_pos },
+      have two_n_pos: 0 < 2 * n,
+        { exact nat.succ_mul_pos 1 n_pos },
+      cases a,
+      cases b,
+      specialize a_regularity two_m_pos two_n_pos,
+      specialize b_regularity two_m_pos two_n_pos,
+
+      calc |a_seq (2 * m) + b_seq (2 * m) - (a_seq (2 * n) + b_seq (2 * n))| = 
+      |(a_seq (2 * m) - a_seq (2 * n)) + ((b_seq (2 * m) - b_seq (2 * n)))| : by ring_nf
+      ... ≤ |a_seq (2 * m) - a_seq (2 * n)| + |b_seq (2 * m) - b_seq (2 * n)| : abs_add _ _
+      ... ≤ ((↑(2 * m))⁻¹ + (↑(2 * n))⁻¹) + ((↑(2 * m))⁻¹ + (↑(2 * n))⁻¹) : add_le_add a_regularity b_regularity
+      ... = (↑m)⁻¹ + (↑n)⁻¹ : by { push_cast, rw mul_inv₀, simp, norm_num, ring_nf, simp, rw mul_inv₀, ring,},
+    end
+  }
+
+instance : has_add real :=
+  ⟨add⟩
+
+end real
