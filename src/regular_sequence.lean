@@ -161,6 +161,9 @@ def neg (a: regular_sequence): regular_sequence :=
         end
   }
 
+instance : has_neg regular_sequence :=
+  ⟨neg⟩
+
 def add : regular_sequence → regular_sequence → regular_sequence :=
 λ a b,
   { val := λ n, a (2*n) + b (2*n),
@@ -183,5 +186,8 @@ def add : regular_sequence → regular_sequence → regular_sequence :=
       ... = (↑m)⁻¹ + (↑n)⁻¹ : by { push_cast, rw mul_inv₀, simp, norm_num, ring_nf, simp, rw mul_inv₀, ring,},
     end
   }
+
+  instance : has_add regular_sequence :=
+  ⟨add⟩
 
 end regular_sequence

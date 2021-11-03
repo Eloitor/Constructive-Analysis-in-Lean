@@ -42,14 +42,10 @@ instance : has_neg real :=
 def add: real → real → real :=
   quotient.lift₂ (λ x y, ⟦regular_sequence.add x y⟧)
   begin
+    simp only [quotient.eq],
     intros a₁ b₁ a₂ b₂ a₁_eq_a₂ b₁_eq_b₂,
-    simp,
-    unfold add,
-    change equivalent ⟨λ (n : ℕ), a₁ (2 * n) + b₁ (2 * n), _⟩ ⟨λ (n : ℕ), a₂ (2 * n) + b₂ (2 * n), _⟩,
-
     rw equivalent_iff at *,
-    rw equivalent_iff',
-    simp at *,
+    unfold add,
     intros j j_pos,
     have two_j_pos : 0 < 2*j,
     {
@@ -61,18 +57,8 @@ def add: real → real → real :=
     obtain ⟨M, hM⟩ := b₁_eq_b₂,
     use max N M,
     intros n n_ge_max,
-    specialize hN n,
-    specialize hM n,
-    have : N ≤ n,
-    {
-      transitivity (max N M),
-      exact le_max_left _ _,
-      assumption,
-    },
-    specialize hN this,
-    
-
-
+    specialize hN (2*n),
+    specialize hM (2*n),
     sorry,
   end
 
