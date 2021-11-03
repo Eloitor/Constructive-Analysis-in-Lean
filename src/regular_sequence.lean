@@ -10,11 +10,90 @@ namespace regular_sequence
 instance : has_coe_to_fun regular_sequence (λ _, ℕ → ℚ) :=
   ⟨subtype.val⟩
 
+/-The constant regular sequence-/
+def const(x: ℚ): regular_sequence :=
+  { val := λ n, x,
+    property := 
+      begin
+      intros m n m_pos n_pos,
+      simp [zero_le],
+      have hm : 0 < (m: ℚ)⁻¹,
+        { rw inv_pos, norm_cast, exact m_pos},
+      have hn: 0 < (n: ℚ)⁻¹,
+        { rw inv_pos, norm_cast, exact n_pos},
+      exact le_of_lt (add_pos hm hn),
+    end
+  }
+
+instance : has_zero regular_sequence :=
+  ⟨const 0⟩
+
+instance : has_one regular_sequence :=
+  ⟨const 1⟩
+
+instance : inhabited regular_sequence :=
+  ⟨0⟩
+
+def neg (a: regular_sequence): regular_sequence :=
+  { val := (λ x, -(a x)),
+      property := 
+        begin
+         unfold is_regular_sequence,
+         intros m n m_pos n_pos,
+         rw ←abs_neg,
+         simp only [neg_sub_neg, neg_sub],
+         exact a.property m_pos n_pos,
+        end
+  }
+
+instance : has_neg regular_sequence :=
+  ⟨neg⟩
+
+def add : regular_sequence → regular_sequence → regular_sequence :=
+λ a b,
+  { val := λ n, a (2*n) + b (2*n),
+    property := 
+    begin
+      intros m n m_pos n_pos,
+      have two_m_pos: 0 < 2 * m,
+        { exact nat.succ_mul_pos 1 m_pos },
+      have two_n_pos: 0 < 2 * n,
+        { exact nat.succ_mul_pos 1 n_pos },
+      cases a,
+      cases b,
+      specialize a_property two_m_pos two_n_pos,
+      specialize b_property two_m_pos two_n_pos,
+
+      calc |a_val (2 * m) + b_val (2 * m) - (a_val (2 * n) + b_val (2 * n))| = 
+      |(a_val (2 * m) - a_val (2 * n)) + ((b_val (2 * m) - b_val (2 * n)))| : by ring_nf
+      ... ≤ |a_val (2 * m) - a_val (2 * n)| + |b_val (2 * m) - b_val (2 * n)| : abs_add _ _
+      ... ≤ ((↑(2 * m))⁻¹ + (↑(2 * n))⁻¹) + ((↑(2 * m))⁻¹ + (↑(2 * n))⁻¹) : add_le_add a_property b_property
+      ... = (↑m)⁻¹ + (↑n)⁻¹ : by { push_cast, rw mul_inv₀, simp, norm_num, ring_nf, simp, rw mul_inv₀, ring,},
+    end
+  }
+
+  instance : has_add regular_sequence :=
+  ⟨add⟩
+
+  instance : has_sub regular_sequence :=
+  ⟨λ a b, add a (neg b)⟩
+
 def equivalent(a b: regular_sequence) :=
   ∀ {n : ℕ}, 0 < n → |a n - b n| ≤ 2 * (n : ℚ)⁻¹
 
 lemma equivalent_refl: reflexive equivalent :=
   λ n h_n, by {simp,}
+
+/-- `lim_zero f` holds when `f` approaches 0. -/
+def lim_zero (f : regular_sequence) : Prop := (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | f n | ≤ (j: ℚ)⁻¹)
+
+theorem add_lim_zero {f g : regular_sequence}
+  (hf : lim_zero f) (hg : lim_zero g) : lim_zero (f + g) :=
+  begin
+    unfold lim_zero,
+    intros j hj,
+    sorry,
+  end
 
 lemma equivalent_symm: symmetric regular_sequence.equivalent :=
   begin
@@ -26,7 +105,7 @@ lemma equivalent_symm: symmetric regular_sequence.equivalent :=
   end
 
 lemma equivalent_iff' {a b: regular_sequence}: 
-    (equivalent a b) ↔ (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | a n - b n | ≤ (j: ℚ)⁻¹) :=
+    (equivalent a b) ↔ lim_zero (a - b) :=
   begin
     split,
     { intros h_eq j j_pos,
@@ -116,78 +195,12 @@ instance equiv: setoid regular_sequence :=
 
 
 lemma equivalent_iff {a b: regular_sequence}: 
-    (a ≈ b) ↔ (∀ (j: ℕ), 0 < j → ∃ N, ∀ n ≥ N, | a n - b n | ≤ (j: ℚ)⁻¹) :=
-equivalent_iff'
+    (a ≈ b) ↔ lim_zero (a - b) :=
+  equivalent_iff'
 
 def canonical_bound(x : regular_sequence): ℕ :=
   nat.ceil (x 1) + 2
 
-/-The constant regular sequence-/
-def const(x: ℚ): regular_sequence :=
-  { val := λ n, x,
-  property := 
-  begin
-    unfold is_regular_sequence,
-    intros m n m_pos n_pos,
-    simp [zero_le],
-    have : 0 < (m: ℚ)⁻¹,
-      { rw inv_pos, norm_cast, exact m_pos},
-    have : 0 < (n: ℚ)⁻¹,
-      { rw inv_pos, norm_cast, exact n_pos},
-    apply le_of_lt,
-    apply add_pos;
-    assumption,
-  end
-  }
 
-instance : has_zero regular_sequence :=
-  ⟨const 0⟩
-
-instance : has_one regular_sequence :=
-  ⟨const 1⟩
-
-instance : inhabited regular_sequence :=
-  ⟨0⟩
-
-def neg (a: regular_sequence): regular_sequence :=
-  { val := (λ x, -(a x)),
-      property := 
-        begin
-         unfold is_regular_sequence,
-         intros m n m_pos n_pos,
-         rw ←abs_neg,
-         simp only [neg_sub_neg, neg_sub],
-         exact a.property m_pos n_pos,
-        end
-  }
-
-instance : has_neg regular_sequence :=
-  ⟨neg⟩
-
-def add : regular_sequence → regular_sequence → regular_sequence :=
-λ a b,
-  { val := λ n, a (2*n) + b (2*n),
-    property := 
-    begin
-      intros m n m_pos n_pos,
-      have two_m_pos: 0 < 2 * m,
-        { exact nat.succ_mul_pos 1 m_pos },
-      have two_n_pos: 0 < 2 * n,
-        { exact nat.succ_mul_pos 1 n_pos },
-      cases a,
-      cases b,
-      specialize a_property two_m_pos two_n_pos,
-      specialize b_property two_m_pos two_n_pos,
-
-      calc |a_val (2 * m) + b_val (2 * m) - (a_val (2 * n) + b_val (2 * n))| = 
-      |(a_val (2 * m) - a_val (2 * n)) + ((b_val (2 * m) - b_val (2 * n)))| : by ring_nf
-      ... ≤ |a_val (2 * m) - a_val (2 * n)| + |b_val (2 * m) - b_val (2 * n)| : abs_add _ _
-      ... ≤ ((↑(2 * m))⁻¹ + (↑(2 * n))⁻¹) + ((↑(2 * m))⁻¹ + (↑(2 * n))⁻¹) : add_le_add a_property b_property
-      ... = (↑m)⁻¹ + (↑n)⁻¹ : by { push_cast, rw mul_inv₀, simp, norm_num, ring_nf, simp, rw mul_inv₀, ring,},
-    end
-  }
-
-  instance : has_add regular_sequence :=
-  ⟨add⟩
 
 end regular_sequence
