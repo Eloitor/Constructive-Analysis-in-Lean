@@ -10,6 +10,14 @@ namespace regular_sequence
 instance : has_coe_to_fun regular_sequence (λ _, ℕ → ℚ) :=
   ⟨subtype.val⟩
  
+@[simp] theorem mk_to_fun (f) (hf : is_regular_sequence f) :
+  @coe_fn regular_sequence _ _ ⟨f, λ x y, hf⟩ = f := rfl
+
+theorem ext {f g : regular_sequence} (h : ∀ i, f i = g i) : f = g :=
+  subtype.eq (funext h)
+ 
+theorem is_reg_seq (f : regular_sequence) : is_regular_sequence f.val := f.property
+
 /-The constant regular sequence-/
 def const(x: ℚ): regular_sequence :=
   { val := λ n, x,
