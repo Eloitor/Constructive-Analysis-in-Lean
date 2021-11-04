@@ -68,8 +68,22 @@ def add : regular_sequence → regular_sequence → regular_sequence :=
   instance : has_add regular_sequence :=
   ⟨add⟩
 
-  instance : has_sub regular_sequence :=
+@[simp] lemma add_apply (a b: regular_sequence) (n: ℕ):  (a + b) n = a (2*n) + b (2*n) := rfl
+
+instance : has_sub regular_sequence :=
   ⟨λ a b, add a (neg b)⟩
+
+def canonical_bound(x : regular_sequence): ℕ :=
+  nat.ceil (x 1) + 2
+
+def mul: regular_sequence → regular_sequence → regular_sequence :=
+  λ x y,
+  { val := let k := max (canonical_bound x) (canonical_bound y) in 
+          λ n, x (2*k*n) + y (2*k*n),
+    property := sorry }
+
+instance : has_mul regular_sequence :=
+  ⟨mul⟩
 
 def equivalent(a b: regular_sequence) :=
   ∀ {n : ℕ}, 0 < n → |a n - b n| ≤ 2 * (n : ℚ)⁻¹
