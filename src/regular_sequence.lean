@@ -74,9 +74,9 @@ instance : has_sub regular_sequence :=
   ⟨λ a b, add a (neg b)⟩
 
 def canonical_bound(x : regular_sequence): ℕ :=
-  nat.ceil (x 1) + 2
+  nat.ceil (|x 1|) + 2
 
-lemma abs_lt_canonical_bound(x : regular_sequence) (n: ℕ) (n_pos: 0 < n): |x n| < canonical_bound x :=
+lemma abs_le_canonical_bound(x : regular_sequence) (n: ℕ) (n_pos: 0 < n): |x n| ≤ canonical_bound x :=
   begin
     calc |x n| = |x n - x 1 + x 1| : by simp
           ... ≤ |x n - x 1| + |x 1| : abs_add _ _
@@ -89,8 +89,28 @@ lemma abs_lt_canonical_bound(x : regular_sequence) (n: ℕ) (n_pos: 0 < n): |x n
                 exact this,
               },
             end
-          ... ≤ 1 + 1 + |x 1| : by { simp, sorry, }
-          ... < canonical_bound x : by sorry
+          ... ≤ 1 + 1 + |x 1| : by { simp, 
+            rw inv_le,
+            {
+              simp only [nat.one_le_cast, inv_one],
+              exact n_pos,
+            },
+            {
+              simp,
+              exact n_pos,
+            },
+            {
+              exact zero_lt_one,
+            },
+          }
+          ... ≤ canonical_bound x :
+          begin
+            rw canonical_bound,
+            simp,
+            norm_num,
+            rw add_comm,
+            exact add_le_add_right (nat.le_ceil _) 2,
+          end
   end
 
 def mul: regular_sequence → regular_sequence → regular_sequence :=
