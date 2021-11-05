@@ -76,7 +76,7 @@ instance : has_sub regular_sequence :=
 def canonical_bound(x : regular_sequence): ℕ :=
   nat.ceil (x 1) + 2
 
-lemma abs_lt_canonical_bound(x : regular_sequence) (n: ℕ) (hn: n > 0): |x n| < canonical_bound x :=
+lemma abs_lt_canonical_bound(x : regular_sequence) (n: ℕ) (n_pos: 0 < n): |x n| < canonical_bound x :=
   begin
     sorry,
   end
