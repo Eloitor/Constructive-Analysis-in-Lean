@@ -76,6 +76,11 @@ instance : has_sub regular_sequence :=
 def canonical_bound(x : regular_sequence): ℕ :=
   nat.ceil (x 1) + 2
 
+lemma abs_lt_canonical_bound(x : regular_sequence) (n: ℕ): |x n| < canonical_bound x :=
+  begin
+    sorry,
+  end
+
 def mul: regular_sequence → regular_sequence → regular_sequence :=
   λ x y,
   { val := let k := max (canonical_bound x) (canonical_bound y) in 
