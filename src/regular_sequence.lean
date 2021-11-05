@@ -168,9 +168,8 @@ lemma equivalent_symm : symmetric regular_sequence.equivalent :=
 
 lemma zero_add_lim_zero {a : regular_sequence} {n : ℕ}: (0 + a) n = a (2*n) :=
   begin
-    have h1: (0+a) n = (0 : regular_sequence) (2*n) + a (2*n) := rfl,
-    have h2: (0 : regular_sequence) (2*n) = 0 := rfl,
-    rw [h1, h2, zero_add],
+    simp,
+    refl,
   end
 
 lemma negative_lim_zero {a b : regular_sequence} {n : ℕ}: (a-b) n  =  a (2*n) - b (2*n)  := rfl 
