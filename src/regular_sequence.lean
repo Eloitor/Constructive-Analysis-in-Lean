@@ -78,7 +78,19 @@ def canonical_bound(x : regular_sequence): ℕ :=
 
 lemma abs_lt_canonical_bound(x : regular_sequence) (n: ℕ) (n_pos: 0 < n): |x n| < canonical_bound x :=
   begin
-    sorry,
+    calc |x n| = |x n - x 1 + x 1| : by simp
+          ... ≤ |x n - x 1| + |x 1| : abs_add _ _
+          ... ≤ (n:ℚ)⁻¹ + (1:ℚ)⁻¹ + |x 1|: 
+            begin
+              apply add_le_add_right,
+              {
+                have := x.property n_pos (nat.succ_pos 0),
+                simp at this,
+                exact this,
+              },
+            end
+          ... ≤ 1 + 1 + |x 1| : by { simp, sorry, }
+          ... < canonical_bound x : by sorry
   end
 
 def mul: regular_sequence → regular_sequence → regular_sequence :=
