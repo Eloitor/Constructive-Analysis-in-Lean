@@ -116,8 +116,77 @@ lemma abs_le_canonical_bound(x : regular_sequence) (n: ℕ) (n_pos: 0 < n): |x n
 def mul: regular_sequence → regular_sequence → regular_sequence :=
   λ x y,
   { val := let k := max (canonical_bound x) (canonical_bound y) in 
-          λ n, x (2*k*n) + y (2*k*n),
-    property := sorry }
+          λ n, x (2*k*n) * y (2*k*n),
+    property := 
+    begin
+      intros m n m_pos n_pos,
+      set k := max (canonical_bound x) (canonical_bound y) with hk,
+      simp,
+
+      have k_pos: 0 < k,
+        {
+          rw hk,
+          rw lt_max_iff,
+          left,
+          unfold canonical_bound,
+          simp,
+        },
+      
+      have two_k_m_pos: 0 < 2 * k * m,
+        {
+          apply nat.mul_pos,
+          exact nat.succ_mul_pos 1 k_pos,
+          assumption,
+        },
+
+      have two_k_n_pos: 0 < 2 * k * n,
+        {
+          apply nat.mul_pos,
+          exact nat.succ_mul_pos 1 k_pos,
+          assumption,
+        },
+      
+      cases x,
+      cases y,
+      specialize x_property two_k_m_pos two_k_n_pos,
+      specialize y_property two_k_m_pos two_k_n_pos,
+
+      change |x_val (2 * k * m) * y_val (2 * k * m) - x_val (2 * k * n) * y_val (2 * k * n)| ≤ (m:ℚ)⁻¹ + (n:ℚ)⁻¹,
+      
+      calc |x_val (2 * k * m) * y_val (2 * k * m) - (x_val (2 * k * n) * y_val (2 * k * n))|
+       = |(x_val (2*k*m)) * (y_val (2*k*m) - y_val (2*k*n)) + (y_val (2*k*n)) * (x_val (2*k*m) - x_val (2*k*n))| : by { congr, ring_nf,}
+        ... ≤ |(x_val (2*k*m)) * (y_val (2*k*m) - y_val (2*k*n))| + |(y_val (2*k*n)) * (x_val (2*k*m) - x_val (2*k*n))| : abs_add _ _
+        ... ≤ k * |(y_val (2*k*m) - y_val (2*k*n))| + k * |(x_val (2*k*m) - x_val (2*k*n))| : 
+        begin 
+          apply add_le_add,
+          {
+            rw abs_mul,
+            rw mul_le_mul_right,
+            {
+              sorry,
+            },
+            {
+              rw abs_pos,
+              sorry,
+            },
+          },
+          {
+            sorry,
+          },
+        end
+        ... ≤ ((↑(2 * k * m))⁻¹ + (↑(2 * k * n))⁻¹) + ((↑(2 * k * m))⁻¹ + (↑(2 * k * n))⁻¹) : 
+        begin
+          apply add_le_add,
+          {
+            sorry
+          },
+          {
+            sorry
+          },
+        end
+       ... ≤ (m: ℚ)⁻¹+ (n:ℚ)⁻¹ : by sorry,
+    end
+  }
 
 instance : has_mul regular_sequence :=
   ⟨mul⟩
