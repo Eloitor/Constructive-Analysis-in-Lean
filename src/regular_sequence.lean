@@ -240,7 +240,7 @@ def mul: regular_sequence → regular_sequence → regular_sequence :=
          simp,
          ring_nf,
          rw add_mul,
-         congr,
+         congr;
           {
             rw mul_comm,
             rw ←mul_assoc,
@@ -260,17 +260,15 @@ def mul: regular_sequence → regular_sequence → regular_sequence :=
             {
               rw hk at k_pos,
               apply ne_of_gt,
-              sorry,
-            },
-            {
-              sorry,
+              have := (@nat.cast_pos ℚ _  _ (max kx ky)).mpr,
+              push_cast at this,
+              exact this k_pos,
             },
           },
-
-         sorry,
        end
     end
   }
+  
 instance : has_mul regular_sequence :=
   ⟨mul⟩
 
