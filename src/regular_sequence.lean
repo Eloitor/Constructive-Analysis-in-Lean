@@ -120,7 +120,9 @@ def mul: regular_sequence → regular_sequence → regular_sequence :=
     property := 
     begin
       intros m n m_pos n_pos,
-      set k := max (canonical_bound x) (canonical_bound y) with hk,
+      set kx := canonical_bound x with h_kx,
+      set ky := canonical_bound y with h_ky,
+      set k := max kx ky with hk,
       simp,
 
       have k_pos: 0 < k,
@@ -128,6 +130,7 @@ def mul: regular_sequence → regular_sequence → regular_sequence :=
           rw hk,
           rw lt_max_iff,
           left,
+          rw h_kx,
           unfold canonical_bound,
           simp,
         },
@@ -146,10 +149,12 @@ def mul: regular_sequence → regular_sequence → regular_sequence :=
           assumption,
         },
       
+      have hx := abs_le_canonical_bound x,
+      have hy := abs_le_canonical_bound y,
       cases x,
       cases y,
-      specialize x_property two_k_m_pos two_k_n_pos,
-      specialize y_property two_k_m_pos two_k_n_pos,
+      obtain := x_property two_k_m_pos two_k_n_pos,
+      obtain := y_property two_k_m_pos two_k_n_pos,
 
       change |x_val (2 * k * m) * y_val (2 * k * m) - x_val (2 * k * n) * y_val (2 * k * n)| ≤ (m:ℚ)⁻¹ + (n:ℚ)⁻¹,
       
@@ -161,33 +166,111 @@ def mul: regular_sequence → regular_sequence → regular_sequence :=
           apply add_le_add,
           {
             rw abs_mul,
-            rw mul_le_mul_right,
+            apply mul_le_mul,
             {
-              sorry,
+              transitivity (kx:ℚ),
+              {
+                rw h_kx,
+                apply hx (2*k*m) two_k_m_pos,
+              },
+              {
+                rw hk,
+                norm_cast,
+                exact le_max_left kx ky,
+              },
             },
             {
-              rw abs_pos,
-              sorry,
+              refl,
+            },
+            {
+              exact abs_nonneg (y_val (2 * k * m) - y_val (2 * k * n)),
+            },
+            {
+              exact nat.cast_nonneg k,
             },
           },
           {
-            sorry,
+            rw abs_mul,
+            apply mul_le_mul,
+            {
+              transitivity (ky:ℚ),
+              {
+                rw h_ky,
+                apply hy (2*k*n) two_k_n_pos,
+              },
+              {
+                rw hk,
+                norm_cast,
+                exact le_max_right kx ky,
+              },
+            },
+            {
+              refl,
+            },
+            {
+              exact abs_nonneg (x_val (2 * k * m) - x_val (2 * k * n)),
+            },
+            {
+              exact nat.cast_nonneg k,
+            },
           },
         end
-        ... ≤ ((↑(2 * k * m))⁻¹ + (↑(2 * k * n))⁻¹) + ((↑(2 * k * m))⁻¹ + (↑(2 * k * n))⁻¹) : 
+    
+        ... ≤ k*((↑(2 * k * m))⁻¹ + (↑(2 * k * n))⁻¹) + k*((↑(2 * k * m))⁻¹ + (↑(2 * k * n))⁻¹) : 
         begin
-          apply add_le_add,
+          apply add_le_add;
           {
-            sorry
-          },
-          {
-            sorry
+            rw mul_le_mul_left,
+            {
+              assumption,
+            },
+            {
+              exact nat.cast_pos.mpr k_pos,
+            },
           },
         end
-       ... ≤ (m: ℚ)⁻¹+ (n:ℚ)⁻¹ : by sorry,
+       ... = (m: ℚ)⁻¹+ (n:ℚ)⁻¹ : 
+       begin
+         rw ←mul_add,
+         rw add_assoc,
+         rw add_comm (↑(2 * k * m))⁻¹ (↑(2 * k * n))⁻¹,
+         nth_rewrite 1 ←add_assoc,
+         push_cast,
+         
+         simp,
+         ring_nf,
+         rw add_mul,
+         congr,
+          {
+            rw mul_comm,
+            rw ←mul_assoc,
+            simp,
+            norm_num;
+            rw mul_inv₀,
+            rw mul_inv₀,
+            nth_rewrite 1 mul_assoc,
+            rw mul_assoc,
+            nth_rewrite 1 ←mul_assoc,
+            simp only [one_mul, mul_inv_cancel, ne.def, not_false_iff, bit0_eq_zero, one_ne_zero],
+            rw ←mul_assoc,
+            rw mul_inv_cancel,
+            {
+              simp,
+            },
+            {
+              rw hk at k_pos,
+              apply ne_of_gt,
+              sorry,
+            },
+            {
+              sorry,
+            },
+          },
+
+         sorry,
+       end
     end
   }
-
 instance : has_mul regular_sequence :=
   ⟨mul⟩
 
