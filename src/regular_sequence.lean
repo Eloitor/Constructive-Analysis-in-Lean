@@ -316,13 +316,19 @@ theorem add_lim_zero {f g : regular_sequence}
 lemma equivalent_symm : symmetric regular_sequence.equivalent :=
   λ _ _ h_eq _ h_n, let h := h_eq h_n in by rwa [←abs_neg, neg_sub]
 
-lemma zero_add_lim_zero {a : regular_sequence} {n : ℕ}: (0 + a) n = a (2*n) :=
+lemma zero_add {a : regular_sequence} {n : ℕ}: (0 + a) n = a (2*n) :=
   begin
     simp,
     refl,
   end
 
-lemma negative_lim_zero {a b : regular_sequence} {n : ℕ}: (a-b) n  =  a (2*n) - b (2*n)  := rfl 
+lemma add_zero {a : regular_sequence} {n : ℕ}: (a + 0) n = a (2*n) :=
+  begin
+    simp,
+    refl,
+  end
+
+lemma subs' {a b : regular_sequence} {n : ℕ}: (a-b) n  =  a (2*n) - b (2*n)  := rfl 
 
 lemma equivalent_iff' {a b: regular_sequence}: 
     (equivalent a b) ↔ lim_zero (a - b) :=
@@ -391,6 +397,13 @@ lemma equivalent_iff' {a b: regular_sequence}:
                    ... ≤ 2 * (↑n)⁻¹ + ε : add_le_add_left j_lt_ε _
     },
   end
+
+lemma lim_zero_of_equiv{a b : regular_sequence}(hab: equivalent a b)(a_lim_zero: lim_zero a): lim_zero b :=
+begin
+  rw equivalent_iff' at *,
+  have := add_lim_zero a_lim_zero hab,
+  sorry
+end
 
 lemma equivalent_trans: transitive regular_sequence.equivalent :=
   begin
