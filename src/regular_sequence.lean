@@ -440,9 +440,5 @@ lemma equivalent_iff {a b: regular_sequence}:
     (a ≈ b) ↔ lim_zero (a - b) :=
   equivalent_iff'
 
-def canonical_bound(x : regular_sequence): ℕ :=
-  nat.ceil (x 1) + 2
-
-
 
 end regular_sequence
