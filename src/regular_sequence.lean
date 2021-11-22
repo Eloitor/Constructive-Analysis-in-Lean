@@ -235,7 +235,7 @@ lemma equivalent_iff' {a b: regular_sequence}:
         },
         calc |a n - b n| = |(a n - a m) + ((a m - b m) + (b m - b n))| : by ring_nf
                      ... ≤ |a n - a m| + |(a m - b m) + (b m - b n)| : abs_add _ _
-                     ... ≤ |a n - a m| + |a m - b m| + |b m - b n| : by linarith [abs_add (a m - b m) (b m - b n)]
+                     ... ≤ |a n - a m| + (|a m - b m| + |b m - b n|) : add_le_add_left (abs_add _ _) _
                      ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + (j: ℚ)⁻¹ + ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) :
                       begin
                         apply add_le_add,
