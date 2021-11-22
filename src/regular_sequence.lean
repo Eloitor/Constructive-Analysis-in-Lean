@@ -226,11 +226,36 @@ lemma equivalent_iff' {a b: regular_sequence}:
       {
         intros j j_pos,
         obtain ⟨Nj, h_Nj⟩  := h_eq j j_pos,
-        let m := max j Nj,
+        set m := max j Nj with hm,
+        have m_pos : 0 < m,
+        {
+          rw hm,
+          have := le_max_left j Nj,
+          linarith,
+        },
         calc |a n - b n| = |(a n - a m) + ((a m - b m) + (b m - b n))| : by ring_nf
                      ... ≤ |a n - a m| + |(a m - b m) + (b m - b n)| : abs_add _ _
-                     ... ≤ |a n - a m| + |a m - b m| + |b m - b n| : by linarith [abs_add (a m - b m) (b m - b n)],
-                     ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + (j: ℚ)⁻¹ + (n: ℚ)⁻¹ + (m: ℚ)⁻¹ : by sorry
+                     ... ≤ |a n - a m| + |a m - b m| + |b m - b n| : by linarith [abs_add (a m - b m) (b m - b n)]
+                     ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + (j: ℚ)⁻¹ + ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) :
+                      begin
+                        apply add_le_add,
+                        {
+                          apply add_le_add,
+                          {    
+                            exact a.property n_pos m_pos,
+                          },
+                          {
+                            unfold lim_zero at h_eq,
+                            specialize h_eq j j_pos,
+                            obtain ⟨Nj, h_Nj⟩  := h_eq,
+                            sorry,
+                          }
+                        },
+                        {
+                          --exact b.property n_pos m_pos, -- no va?
+                          sorry,
+                        }
+                      end
                      ... < 2*(↑n)⁻¹ + 3*(↑j)⁻¹: 
                       begin
                         sorry,
