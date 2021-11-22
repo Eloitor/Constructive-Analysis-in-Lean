@@ -13,6 +13,8 @@ instance : has_coe_to_fun regular_sequence (λ _, ℕ → ℚ) :=
 @[simp] theorem mk_to_fun (f) (hf : is_regular_sequence f) :
   @coe_fn regular_sequence _ _ ⟨f, λ x y, hf⟩ = f := rfl
 
+@[simp] lemma fn_apply (a: regular_sequence) (n) : a n = a.val n := rfl
+
 theorem ext {f g : regular_sequence} (h : ∀ i, f i = g i) : f = g :=
   subtype.eq (funext h)
  
@@ -42,6 +44,9 @@ def neg (a: regular_sequence): regular_sequence :=
 instance : has_neg regular_sequence :=
   ⟨neg⟩
 
+lemma neg_apply (a: regular_sequence) (n: ℕ): -a n = -(a n) := rfl
+
+
 def add : regular_sequence → regular_sequence → regular_sequence :=
 λ a b,
   { val := λ n, a (2*n) + b (2*n),
@@ -68,10 +73,14 @@ def add : regular_sequence → regular_sequence → regular_sequence :=
   instance : has_add regular_sequence :=
   ⟨add⟩
 
-@[simp] lemma add_apply (a b: regular_sequence) (n: ℕ):  (a + b) n = a (2*n) + b (2*n) := rfl
+@[simp] lemma add_apply' (a b: regular_sequence) (n: ℕ): (a + b).val n = a (2*n) + b (2*n) := rfl
+
+@[simp] lemma add_apply (a b: regular_sequence) (n: ℕ): (a + b) n = a (2*n) + b (2*n) := rfl
 
 instance : has_sub regular_sequence :=
   ⟨λ a b, add a (neg b)⟩
+
+@[simp] lemma sub_apply (a b: regular_sequence) (n: ℕ): (a - b) n = a (2*n) - b (2*n) := rfl
 
 def canonical_bound(x : regular_sequence): ℕ :=
   nat.ceil (|x 1|) + 2

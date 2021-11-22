@@ -11,7 +11,7 @@ def non_neg(a: regular_sequence) :=
   ∃ n: ℕ, 0 < n → -(n: ℚ)⁻¹ ≤ (a n)
 
 
-lemma pos_iff{a: regular_sequence} : pos a ↔ ∃ N: ℕ, ∀ m > N, (N: ℚ)⁻¹ < (a m) := 
+lemma pos_iff{a: regular_sequence} : pos a ↔ ∃ N: ℕ, 0 < N → ∀ m > N, (N: ℚ)⁻¹ < (a m) := 
   begin
     split,
     {
@@ -27,7 +27,7 @@ lemma pos_of_equiv{a b: regular_sequence} (H: equivalent a b) : pos a → pos b 
     sorry,
   end
 
-lemma non_neg_iff{a: regular_sequence} : non_neg a ↔ ∃ N: ℕ, ∀ m > N, -(N: ℚ)⁻¹ ≤ (a m) := 
+lemma non_neg_iff{a: regular_sequence} : non_neg a ↔ ∃ N: ℕ, 0 < N → ∀ m > N, -(N: ℚ)⁻¹ ≤ (a m) := 
   begin
     split,
     {
@@ -44,3 +44,4 @@ lemma non_neg_of_equiv{a b: regular_sequence} (H: equivalent a b) : non_neg a �
   end
 
 end regular_sequence
+
