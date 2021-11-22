@@ -229,7 +229,7 @@ lemma equivalent_iff' {a b: regular_sequence}:
         let m := max j Nj,
         calc |a n - b n| = |(a n - a m) + ((a m - b m) + (b m - b n))| : by ring_nf
                      ... ≤ |a n - a m| + |(a m - b m) + (b m - b n)| : abs_add _ _
-                     ... ≤ |a n - a m| + |a m - b m| + |b m - b n| : by sorry
+                     ... ≤ |a n - a m| + |a m - b m| + |b m - b n| : by linarith [abs_add (a m - b m) (b m - b n)],
                      ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + (j: ℚ)⁻¹ + (n: ℚ)⁻¹ + (m: ℚ)⁻¹ : by sorry
                      ... < 2*(↑n)⁻¹ + 3*(↑j)⁻¹: 
                       begin
