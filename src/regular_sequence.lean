@@ -313,9 +313,9 @@ instance equiv: setoid regular_sequence :=
   setoid.mk equivalent ⟨equivalent_refl, equivalent_symm, equivalent_trans⟩
 
 
---lemma equivalent_iff {a b: regular_sequence}: 
---    (a ≈ b) ↔ lim_zero (a - b) :=
---  equivalent_iff'
+lemma equivalent_iff {a b: regular_sequence}: 
+    (a ≈ b) ↔ (∀ j: ℕ, 0 < j → ∃ Nj, ∀ n ≥ Nj, |a n - b n| ≤ (j : ℚ)⁻¹) :=
+  equivalent_iff'
 
 
 end regular_sequence
