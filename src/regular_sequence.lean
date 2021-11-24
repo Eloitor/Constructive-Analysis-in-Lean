@@ -183,7 +183,7 @@ lemma add_zero {a : regular_sequence} {n : ℕ}: (a + 0) n = a (2*n) :=
 lemma subs' {a b : regular_sequence} {n : ℕ}: (a-b) n  =  a (2*n) - b (2*n)  := rfl 
 
 lemma equivalent_iff' {a b: regular_sequence}: 
-    (equivalent a b) ↔ lim_zero (a - b) :=
+    (equivalent a b) ↔ (∀ j: ℕ, 0 < j → ∃ Nj, ∀ n ≥ Nj, |a n - b n| ≤ (j : ℚ)⁻¹) :=
   begin
     split,
     { intros h_eq j j_pos,
@@ -200,25 +200,27 @@ lemma equivalent_iff' {a b: regular_sequence}:
       {  
         exact gt_of_ge_of_gt hn2n n_pos,
       },
-      specialize h_eq n2_pos,
+      specialize h_eq n_pos,
 
-      have n_inv_pos: 0 < (2*n : ℚ)⁻¹,
+      have n_inv_pos: 0 < (n : ℚ)⁻¹,
         {
           simp, exact n_pos,          
         },
 
-      have n_inv_le: (2*n : ℚ)⁻¹ ≤ (2*j : ℚ)⁻¹,
-      { rw le_inv n_inv_pos,
-        { simp only [inv_inv₀],
-          norm_cast,
-          exact le_trans n_ge_two_j hn2n},
-        { norm_cast,
-          exact nat.succ_mul_pos 1 j_pos},
-      },
-      
-      calc |a (2*n) - b (2*n) | ≤ 2*(↑(2*n))⁻¹: h_eq
-                   ... ≤ 2*(2*j)⁻¹ : by simp [n_inv_le]
-                   ... = (↑j)⁻¹ :  by { rw [mul_inv₀], ring},
+      calc |a n - b n | ≤ 2*(↑n)⁻¹: h_eq
+                   ... ≤ 2*(2*j)⁻¹ : 
+                   begin
+                     -- TODO: Simplify this
+                     simp,
+                     rw le_inv n_inv_pos,
+                     simp [inv_inv],
+                     all_goals{norm_cast,},
+                     assumption,
+                     linarith,
+                   end 
+                   ... = (↑j)⁻¹ :  by { rw [mul_inv₀], ring}
+
+     
     },
     { 
       intros h_eq n n_pos,
@@ -236,24 +238,23 @@ lemma equivalent_iff' {a b: regular_sequence}:
         calc |a n - b n| = |(a n - a m) + ((a m - b m) + (b m - b n))| : by ring_nf
                      ... ≤ |a n - a m| + |(a m - b m) + (b m - b n)| : abs_add _ _
                      ... ≤ |a n - a m| + (|a m - b m| + |b m - b n|) : add_le_add_left (abs_add _ _) _
-                     ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + (j: ℚ)⁻¹ + ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) :
+                     ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + ((j: ℚ)⁻¹ + ((n: ℚ)⁻¹ + (m: ℚ)⁻¹)) :
                       begin
                         apply add_le_add,
                         {
-                          apply add_le_add,
-                          {    
-                            exact a.property n_pos m_pos,
-                          },
-                          {
-                            unfold lim_zero at h_eq,
-                            specialize h_eq j j_pos,
-                            obtain ⟨Nj, h_Nj⟩  := h_eq,
-                            sorry,
-                          }
+                          exact a.property n_pos m_pos,
                         },
                         {
-                          --exact b.property n_pos m_pos, -- no va?
-                          sorry,
+                          apply add_le_add,
+                          {
+                            --unfold lim_zero at h_eq,
+                            simp at *,
+                            sorry,
+                          },
+                          {
+                            rw add_comm,
+                            exact b.property m_pos n_pos,
+                          }
                         }
                       end
                      ... < 2*(↑n)⁻¹ + 3*(↑j)⁻¹: 
@@ -278,7 +279,6 @@ lemma equivalent_iff' {a b: regular_sequence}:
 lemma lim_zero_of_equiv{a b : regular_sequence}(hab: equivalent a b)(a_lim_zero: lim_zero a): lim_zero b :=
 begin
   rw equivalent_iff' at *,
-  have := add_lim_zero a_lim_zero hab,
   sorry
 end
 
@@ -299,23 +299,23 @@ lemma equivalent_trans: transitive regular_sequence.equivalent :=
       { exact le_of_max_le_left n_ge_max },
     have n_ge_M: n ≥ M,
       { exact le_of_max_le_right n_ge_max },
-    
-    specialize h_N n n_ge_N,
-    specialize h_M n n_ge_M,
-    calc |a (2*n) - c (2*n)| ≤ |(a (2*n) - b (2*n)) + (b (2*n) - c (2*n))| : by simp
-                 ... ≤ |a (2*n) - b (2*n)| + |b (2*n) - c (2*n)| : abs_add _ _
+
+    specialize h_N n n_ge_N, 
+    specialize h_M n n_ge_M, 
+
+    calc |a n - c n| ≤ |(a n - b n) + (b n - c n)| : by simp
+                 ... ≤ |a n - b n| + |b n - c n| : abs_add _ _
                  ... ≤ (↑(2*j))⁻¹ + (↑(2*j))⁻¹ : add_le_add h_N h_M
-                 ... = (j: ℚ)⁻¹ : by { push_cast, rw mul_inv₀, ring},
-  
+                 ... = (j: ℚ)⁻¹ : by { push_cast, rw mul_inv₀, ring}
   end
 
 instance equiv: setoid regular_sequence :=
   setoid.mk equivalent ⟨equivalent_refl, equivalent_symm, equivalent_trans⟩
 
 
-lemma equivalent_iff {a b: regular_sequence}: 
-    (a ≈ b) ↔ lim_zero (a - b) :=
-  equivalent_iff'
+--lemma equivalent_iff {a b: regular_sequence}: 
+--    (a ≈ b) ↔ lim_zero (a - b) :=
+--  equivalent_iff'
 
 
 end regular_sequence
