@@ -196,83 +196,58 @@ lemma equivalent_iff' {a b: regular_sequence}:
         obtain h := mul_le_mul one_le_two rfl.ge (zero_le n) (zero_le 2),
         rwa one_mul at h,
       },
-      have n2_pos: 0 < 2*n,
-      {  
-        exact gt_of_ge_of_gt hn2n n_pos,
-      },
+      have n2_pos := gt_of_ge_of_gt hn2n n_pos,
       specialize h_eq n_pos,
-
-      have n_inv_pos: 0 < (n : ℚ)⁻¹,
-        {
-          simp, exact n_pos,          
-        },
-
-      calc |a n - b n | ≤ 2*(↑n)⁻¹: h_eq
-                   ... ≤ 2*(2*j)⁻¹ : 
-                   begin
-                     -- TODO: Simplify this
-                     simp,
-                     rw le_inv n_inv_pos,
-                     simp [inv_inv],
-                     all_goals{norm_cast,},
-                     assumption,
-                     linarith,
-                   end 
+      have n_inv_pos: 0 < (n : ℚ)⁻¹, by rwa [inv_pos, nat.cast_pos],
+      haveI := rat.nontrivial,
+      have ninv_lt_2jinv : (n : ℚ)⁻¹ ≤ (2*j)⁻¹,
+      {
+        rw inv_le_inv,
+        norm_cast,
+        exact n_ge_two_j,
+        exact nat.cast_pos.2 n_pos,
+        exact (@zero_lt_mul_left _ _  (j : ℚ) 2 zero_lt_two).2 (nat.cast_pos.2 j_pos),
+      },
+      calc |a n - b n | ≤ 2*(↑n)⁻¹ : h_eq
+                   ... ≤ 2*(2*j)⁻¹ : by rwa @mul_le_mul_left _ _ (n : ℚ)⁻¹ (2*j)⁻¹ 2 zero_lt_two
                    ... = (↑j)⁻¹ :  by { rw [mul_inv₀], ring}
-
-     
     },
     { 
       intros h_eq n n_pos,
-      have key: ∀ j: ℕ, 0 < j → |a n - b n| < 2*(n: ℚ)⁻¹ + 3 * (j: ℚ)⁻¹,
+      have key: ∀ j: ℕ, 0 < j → |a n - b n| ≤ 2*(n: ℚ)⁻¹ + 3 * (j: ℚ)⁻¹,
       {
         intros j j_pos,
         obtain ⟨Nj, h_Nj⟩  := h_eq j j_pos,
         set m := max j Nj with hm,
-        have m_pos : 0 < m,
+        have m_pos := gt_of_ge_of_gt (le_max_left j Nj) j_pos,
+        have inv_m_leq_inv_j : 2*(m : ℚ)⁻¹ ≤ 2*(j : ℚ)⁻¹,
         {
-          rw hm,
-          have := le_max_left j Nj,
-          linarith,
+          simp only [mul_le_mul_left, nat.cast_max, zero_lt_bit0, zero_lt_one],
+          obtain m_rat_pos := @lt_max_of_lt_left _ _ 0 (j : ℚ) (Nj : ℚ) (nat.cast_pos.mpr j_pos),
+          rw inv_le_inv m_rat_pos (nat.cast_pos.mpr j_pos),
+          norm_cast,
+          exact le_max_left j Nj,
         },
         calc |a n - b n| = |(a n - a m) + ((a m - b m) + (b m - b n))| : by ring_nf
                      ... ≤ |a n - a m| + |(a m - b m) + (b m - b n)| : abs_add _ _
                      ... ≤ |a n - a m| + (|a m - b m| + |b m - b n|) : add_le_add_left (abs_add _ _) _
-                     ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + ((j: ℚ)⁻¹ + ((n: ℚ)⁻¹ + (m: ℚ)⁻¹)) :
-                      begin
-                        apply add_le_add,
-                        {
-                          exact a.property n_pos m_pos,
-                        },
-                        {
-                          apply add_le_add,
-                          {
-                            --unfold lim_zero at h_eq,
-                            simp at *,
-                            sorry,
-                          },
-                          {
-                            rw add_comm,
-                            exact b.property m_pos n_pos,
-                          }
-                        }
-                      end
-                     ... < 2*(↑n)⁻¹ + 3*(↑j)⁻¹: 
-                      begin
-                        sorry,
-                      end,
+                     ... ≤ ((n: ℚ)⁻¹ + (m: ℚ)⁻¹) + ((j: ℚ)⁻¹ + ((m: ℚ)⁻¹ + (n: ℚ)⁻¹) ): by exact add_le_add (a.property n_pos m_pos) 
+                                                                  (add_le_add (h_Nj m (le_max_right j Nj)) (b.property m_pos n_pos))
+                     ... = 2*(↑n)⁻¹ + 2 * (↑m)⁻¹ + (↑j)⁻¹ : by ring_nf
+                     ... ≤ 2*(↑n)⁻¹ + 2 * (↑j)⁻¹ + (↑j)⁻¹ : by exact add_le_add_right (add_le_add_left inv_m_leq_inv_j (2 * (↑n)⁻¹)) (↑j)⁻¹
+                     ... = 2*(↑n)⁻¹ + 3*(↑j)⁻¹: by ring_nf
       },
       apply le_of_forall_pos_le_add,
       intros ε ε_pos,
       apply le_of_lt,
-      have : ∃ j: ℕ, 0 < j ∧ 3*(j: ℚ)⁻¹ ≤ ε,
+      have : ∃ j: ℕ, 0 < j ∧ 3*(j: ℚ)⁻¹ < ε, -- is it true?
       {
         sorry,
       },
       obtain ⟨j, j_pos, j_lt_ε⟩ := this,
       specialize key j j_pos,
-      calc |a n - b n| < 2 * (↑n)⁻¹ + 3 * (↑j)⁻¹ : key
-                   ... ≤ 2 * (↑n)⁻¹ + ε : add_le_add_left j_lt_ε _
+      calc |a n - b n| ≤ 2 * (↑n)⁻¹ + 3 * (↑j)⁻¹ : key
+                   ... < 2 * (↑n)⁻¹ + ε : add_lt_add_left j_lt_ε _
     },
   end
 
