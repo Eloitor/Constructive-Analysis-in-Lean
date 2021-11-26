@@ -59,6 +59,7 @@ def add: real → real → real :=
     intros n n_ge_max,
     specialize hN (2*n),
     specialize hM (2*n),
+    simp only [fn_apply, subtype.val_eq_coe],
     sorry,
   end
 

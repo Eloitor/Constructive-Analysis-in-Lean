@@ -24,8 +24,7 @@ begin
     ring_nf,
     rw max_comm,
     simp only [max_eq_right_iff],
-    apply le_of_lt,
-    assumption,
+    exact le_of_lt h,
   }
 end
 
@@ -34,7 +33,11 @@ def regular_sequence.max(a b: regular_sequence): regular_sequence :=
   property := 
   begin
     intros n m n_pos m_pos,
-    sorry,
+    simp,
+    repeat {rw max_eq},
+    calc |(a n + b n + |a n - b n|) / 2 - (a m + b m + |a m - b m|) / 2|
+      = |((a n - a m) + (b n - b m) + |a n - b n| - |a m - b m|)/2 | : by ring
+     ... ≤ (n)⁻¹ + (m)⁻¹ : by sorry
   end }
 
 @[simp]
