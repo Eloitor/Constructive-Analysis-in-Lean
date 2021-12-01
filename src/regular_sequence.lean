@@ -242,7 +242,30 @@ lemma equivalent_iff' {a b: regular_sequence}:
       apply le_of_lt,
       have : ∃ j: ℕ, 0 < j ∧ 3*(j: ℚ)⁻¹ < ε, -- is it true?
       {
-        sorry,
+        use (int.nat_abs (rat.floor ((3/ε))))+1, -- we have to choose if we want to use nat_abs or to_nat.
+        split,
+        {
+          exact fin.last_pos,
+        },
+        {
+          have: ↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1 > 3/ε,
+            {
+              sorry,
+            },
+          have: (↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1)⁻¹ < (3/ε)⁻¹,
+          {
+            sorry,
+          },
+          apply @lt_of_mul_lt_mul_left ℚ _ _ _ (3: ℚ)⁻¹,
+          {
+            
+            sorry,
+          },
+          {
+            simp only [inv_nonneg],
+            exact sup_eq_left.mp rfl,
+          }
+        }
       },
       obtain ⟨j, j_pos, j_lt_ε⟩ := this,
       specialize key j j_pos,
