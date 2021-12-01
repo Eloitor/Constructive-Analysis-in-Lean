@@ -306,9 +306,18 @@ begin
   specialize hN₂ n hn₂,
   calc |b n| = |b n - a n + a n| : by ring_nf
   ... ≤ |b n - a n| + |a n| : abs_add _ _
-  ... = |a n - b n| + |a n| : by sorry
-  ... ≤ (2 * j)⁻¹ + (2 * j)⁻¹: by sorry
-  ... = (↑j)⁻¹ : by sorry
+  ... = |a n - b n| + |a n| : by  rw [←abs_neg, neg_sub]
+  ... ≤ (2 * j)⁻¹ + (2 * j)⁻¹: 
+  begin
+    apply add_le_add,
+    {
+      sorry,
+    },
+    {
+      sorry,
+    }
+  end
+  ... = (↑j)⁻¹ : by {ring_nf, rw mul_inv₀, simp,},
 
 end
 
