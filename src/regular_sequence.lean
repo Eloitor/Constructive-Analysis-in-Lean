@@ -256,10 +256,17 @@ lemma equivalent_iff' {a b: regular_sequence}:
           {
             sorry,
           },
+
           apply @lt_of_mul_lt_mul_left ℚ _ _ _ (3: ℚ)⁻¹,
           {
-            
-            sorry,
+            rw← mul_assoc,
+            rw inv_mul_cancel,
+            {
+              sorry,
+            },
+            {
+              sorry,
+            },
           },
           {
             simp only [inv_nonneg],
@@ -277,7 +284,32 @@ lemma equivalent_iff' {a b: regular_sequence}:
 lemma lim_zero_of_equiv{a b : regular_sequence}(hab: equivalent a b)(a_lim_zero: lim_zero a): lim_zero b :=
 begin
   rw equivalent_iff' at *,
-  sorry
+  unfold lim_zero at *,
+  intros j hj,
+  have : 0 < 2*j,
+  {
+    exact nat.succ_mul_pos 1 hj,
+  },
+  obtain ⟨N₁, hN₁⟩ := a_lim_zero (2*j) this,
+  obtain ⟨N₂, hN₂⟩ := hab (2*j) this,
+  use max N₁ N₂,
+  intros n hn,
+  have hn₁ : n ≥ N₁,
+  {
+    exact le_of_max_le_left hn,
+  },
+  have hn₂ : n ≥ N₂,
+  {
+    exact le_of_max_le_right hn,
+  },
+  specialize hN₁ n hn₁,
+  specialize hN₂ n hn₂,
+  calc |b n| = |b n - a n + a n| : by ring_nf
+  ... ≤ |b n - a n| + |a n| : abs_add _ _
+  ... = |a n - b n| + |a n| : by sorry
+  ... ≤ (2 * j)⁻¹ + (2 * j)⁻¹: by sorry
+  ... = (↑j)⁻¹ : by sorry
+
 end
 
 lemma equivalent_trans: transitive regular_sequence.equivalent :=
