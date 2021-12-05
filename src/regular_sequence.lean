@@ -239,39 +239,27 @@ lemma equivalent_iff' {a b: regular_sequence}:
       },
       apply le_of_forall_pos_le_add,
       intros ε ε_pos,
-      apply le_of_lt,
-      have : ∃ j: ℕ, 0 < j ∧ 3*(j: ℚ)⁻¹ < ε, -- is it true?
+      have h1: ↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1 > 3/ε,
       {
-        use (int.nat_abs (rat.floor ((3/ε))))+1, -- we have to choose if we want to use nat_abs or to_nat.
+        finish,
+      },
+      have h2 : (↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1)⁻¹ < (3/ε)⁻¹,
+      {        
+        exact (@inv_lt_inv ℚ _ _ _ (3 / ε).floor.nat_abs.cast_add_one_pos 
+          (div_pos zero_lt_three ε_pos)).2 h1
+      },
+      apply le_of_lt,
+      have : ∃ j: ℕ, 0 < j ∧ 3*(j: ℚ)⁻¹ < ε,
+      {
+        use (int.nat_abs (rat.floor ((3/ε))))+1,
         split,
         {
           exact fin.last_pos,
         },
         {
-          have: ↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1 > 3/ε,
-            {
-              sorry,
-            },
-          have: (↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1)⁻¹ < (3/ε)⁻¹,
-          {
-            sorry,
-          },
-
-          apply @lt_of_mul_lt_mul_left ℚ _ _ _ (3: ℚ)⁻¹,
-          {
-            rw← mul_assoc,
-            rw inv_mul_cancel,
-            {
-              sorry,
-            },
-            {
-              sorry,
-            },
-          },
-          {
-            simp only [inv_nonneg],
-            exact sup_eq_left.mp rfl,
-          }
+          calc 3 * (↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1)⁻¹ < 3* (3/ε)⁻¹ : mul_lt_mul_of_pos_left h2 zero_lt_three
+              ... = 3 * (ε/3) : by rw inv_div 
+              ... = ε : by ring_nf
         }
       },
       obtain ⟨j, j_pos, j_lt_ε⟩ := this,
@@ -286,39 +274,19 @@ begin
   rw equivalent_iff' at *,
   unfold lim_zero at *,
   intros j hj,
-  have : 0 < 2*j,
-  {
-    exact nat.succ_mul_pos 1 hj,
-  },
-  obtain ⟨N₁, hN₁⟩ := a_lim_zero (2*j) this,
-  obtain ⟨N₂, hN₂⟩ := hab (2*j) this,
+  obtain h2j_pos := nat.succ_mul_pos 1 hj,
+  obtain ⟨N₁, hN₁⟩ := a_lim_zero (2*j) h2j_pos,
+  obtain ⟨N₂, hN₂⟩ := hab (2*j) h2j_pos,
   use max N₁ N₂,
-  intros n hn,
-  have hn₁ : n ≥ N₁,
-  {
-    exact le_of_max_le_left hn,
-  },
-  have hn₂ : n ≥ N₂,
-  {
-    exact le_of_max_le_right hn,
-  },
-  specialize hN₁ n hn₁,
-  specialize hN₂ n hn₂,
+  intros n hn,  
+  specialize hN₁ n (le_of_max_le_left hn),
+  specialize hN₂ n (le_of_max_le_right hn),
+  have h2jNQ : (↑(2 * j))⁻¹ = (((2 : ℚ) * ↑j))⁻¹ := by rw [nat.cast_mul, nat.cast_two],
   calc |b n| = |b n - a n + a n| : by ring_nf
   ... ≤ |b n - a n| + |a n| : abs_add _ _
   ... = |a n - b n| + |a n| : by  rw [←abs_neg, neg_sub]
-  ... ≤ (2 * j)⁻¹ + (2 * j)⁻¹: 
-  begin
-    apply add_le_add,
-    {
-      sorry,
-    },
-    {
-      sorry,
-    }
-  end
+  ... ≤ (2 * j)⁻¹ + (2 * j)⁻¹: add_le_add (by rwa ← h2jNQ) (by rwa ← h2jNQ)
   ... = (↑j)⁻¹ : by {ring_nf, rw mul_inv₀, simp,},
-
 end
 
 lemma equivalent_trans: transitive regular_sequence.equivalent :=
