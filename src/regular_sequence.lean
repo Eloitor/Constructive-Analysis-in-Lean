@@ -241,7 +241,7 @@ lemma equivalent_iff' {a b: regular_sequence}:
       intros ε ε_pos,
       have h1: ↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1 > 3/ε,
       {
-        finish,
+        sorry,
       },
       have h2 : (↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1)⁻¹ < (3/ε)⁻¹,
       {        
