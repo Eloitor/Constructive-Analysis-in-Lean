@@ -36,56 +36,6 @@ instance : has_one regular_sequence :=
 instance : inhabited regular_sequence :=
   ⟨0⟩
 
-def neg (a: regular_sequence): regular_sequence :=
-  { val := (λ x, -(a x)),
-    property := λ _ _ m_pos n_pos, let h := a.property m_pos n_pos 
-        in by rwa [←abs_neg, neg_sub_neg, neg_sub] }
-
-instance : has_neg regular_sequence :=
-  ⟨neg⟩
-
-lemma neg_apply (a: regular_sequence) (n: ℕ): -a n = -(a n) := rfl
-
-def canonical_bound(x : regular_sequence): ℕ :=
-  nat.ceil (|x 1|) + 2
-
-lemma abs_le_canonical_bound(x : regular_sequence) (n: ℕ) (n_pos: 0 < n): |x n| ≤ canonical_bound x :=
-  begin
-    calc |x n| = |x n - x 1 + x 1| : by simp
-          ... ≤ |x n - x 1| + |x 1| : abs_add _ _
-          ... ≤ (n:ℚ)⁻¹ + (1:ℚ)⁻¹ + |x 1|: 
-            begin
-              apply add_le_add_right,
-              {
-                have := x.property n_pos (nat.succ_pos 0),
-                simp at this,
-                exact this,
-              },
-            end
-          ... ≤ 1 + 1 + |x 1| : by { simp, 
-            rw inv_le,
-            {
-              simp only [nat.one_le_cast, inv_one],
-              exact n_pos,
-            },
-            {
-              simp,
-              exact n_pos,
-            },
-            {
-              exact zero_lt_one,
-            },
-          }
-          ... ≤ canonical_bound x :
-          begin
-            rw canonical_bound,
-            simp,
-            norm_num,
-            rw add_comm,
-            exact add_le_add_right (nat.le_ceil _) 2,
-          end
-  end
-
 def equivalent(a b: regular_sequence) :=
   ∀ {n : ℕ}, 0 < n → |a n - b n| ≤ 2 * (n : ℚ)⁻¹
 

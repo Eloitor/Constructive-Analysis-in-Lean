@@ -1,14 +1,17 @@
 import regular_sequence
+import data.analysis.filter
+import data.analysis.topology
 
 namespace regular_sequence 
 
 open regular_sequence
 
+
 def pos(a: regular_sequence) := 
   ∃ n: ℕ, 0 < n → (n: ℚ)⁻¹ < (a n)
 
 def non_neg(a: regular_sequence) := 
-  ∃ n: ℕ, 0 < n → -(n: ℚ)⁻¹ ≤ (a n)
+  ∀ n: ℕ, 0 < n → -(n: ℚ)⁻¹ ≤ (a n)
 
 
 lemma pos_iff{a: regular_sequence} : pos a ↔ ∃ N: ℕ, 0 < N → ∀ m > N, (N: ℚ)⁻¹ < (a m) := 

@@ -26,15 +26,22 @@ def add : regular_sequence → regular_sequence → regular_sequence :=
     end
   }
 
+def neg (a: regular_sequence): regular_sequence :=
+  { val := (λ x, -(a x)),
+    property := λ _ _ m_pos n_pos, let h := a.property m_pos n_pos 
+        in by rwa [←abs_neg, neg_sub_neg, neg_sub] }
+
+instance : has_neg regular_sequence :=
+  ⟨neg⟩
+
+lemma neg_apply (a: regular_sequence) (n: ℕ): -a n = -(a n) := rfl
+
 instance : has_sub regular_sequence :=
   ⟨λ a b, add a (neg b)⟩
 
 @[simp] lemma sub_apply (a b: regular_sequence) (n: ℕ): (a - b) n = a (2*n) - b (2*n) := rfl
 
-
-
 lemma subs' {a b : regular_sequence} {n : ℕ}: (a-b) n  =  a (2*n) - b (2*n)  := rfl 
-
 
 instance : has_add regular_sequence :=
   ⟨add⟩

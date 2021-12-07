@@ -3,6 +3,46 @@ import reals
 
 namespace regular_sequence
 
+def canonical_bound(x : regular_sequence): ℕ :=
+  nat.ceil (|x 1|) + 2
+
+lemma abs_le_canonical_bound(x : regular_sequence) (n: ℕ) (n_pos: 0 < n): |x n| ≤ canonical_bound x :=
+  begin
+    calc |x n| = |x n - x 1 + x 1| : by simp
+          ... ≤ |x n - x 1| + |x 1| : abs_add _ _
+          ... ≤ (n:ℚ)⁻¹ + (1:ℚ)⁻¹ + |x 1|: 
+            begin
+              apply add_le_add_right,
+              {
+                have := x.property n_pos (nat.succ_pos 0),
+                simp at this,
+                exact this,
+              },
+            end
+          ... ≤ 1 + 1 + |x 1| : by { simp, 
+            rw inv_le,
+            {
+              simp only [nat.one_le_cast, inv_one],
+              exact n_pos,
+            },
+            {
+              simp,
+              exact n_pos,
+            },
+            {
+              exact zero_lt_one,
+            },
+          }
+          ... ≤ canonical_bound x :
+          begin
+            rw canonical_bound,
+            simp,
+            norm_num,
+            rw add_comm,
+            exact add_le_add_right (nat.le_ceil _) 2,
+          end
+  end
+
 def mul: regular_sequence → regular_sequence → regular_sequence :=
   λ x y,
   { val := let k := max (canonical_bound x) (canonical_bound y) in 
