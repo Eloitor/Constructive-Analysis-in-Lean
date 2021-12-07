@@ -239,25 +239,29 @@ lemma equivalent_iff' {a b: regular_sequence}:
       },
       apply le_of_forall_pos_le_add,
       intros ε ε_pos,
-      have h1: ↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1 > 3/ε,
+      have h1: ↑(int.floor ((3:ℚ)/ε))+1 > 3/ε,
       {
-        sorry,
+        obtain h := rat.num_lt_succ_floor_mul_denom ((3:ℚ)/ε),
+        apply rat.lt_def.2,
+        norm_cast,
+        simp[h],
       },
-      have h2 : (↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1)⁻¹ < (3/ε)⁻¹,
+      have hh1 := nat.lt_succ_floor (3 / ε),
+      have h2 : (↑(int.to_nat (int.floor ((3:ℚ)/ε)))+1)⁻¹ < (3/ε)⁻¹,
       {        
-        exact (@inv_lt_inv ℚ _ _ _ (3 / ε).floor.nat_abs.cast_add_one_pos 
-          (div_pos zero_lt_three ε_pos)).2 h1
+        exact (@inv_lt_inv ℚ _ _ _ (⌊3 / ε⌋.to_nat.cast_add_one_pos) 
+            (div_pos zero_lt_three ε_pos)).2 hh1,
       },
       apply le_of_lt,
       have : ∃ j: ℕ, 0 < j ∧ 3*(j: ℚ)⁻¹ < ε,
       {
-        use (int.nat_abs (rat.floor ((3/ε))))+1,
+        use  int.to_nat (int.floor ((3/ε)))+1,
         split,
         {
           exact fin.last_pos,
         },
         {
-          calc 3 * (↑(int.nat_abs (rat.floor ((3:ℚ)/ε)))+1)⁻¹ < 3* (3/ε)⁻¹ : mul_lt_mul_of_pos_left h2 zero_lt_three
+          calc 3 * (↑(int.to_nat (rat.floor ((3:ℚ)/ε)))+1)⁻¹ < 3* (3/ε)⁻¹ : mul_lt_mul_of_pos_left h2 zero_lt_three
               ... = 3 * (ε/3) : by rw inv_div 
               ... = ε : by ring_nf
         }
