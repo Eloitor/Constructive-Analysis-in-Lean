@@ -39,28 +39,6 @@ def real_neg : real → real :=
 instance : has_neg real :=
   ⟨real_neg⟩
 
-def add: real → real → real :=
-  quotient.lift₂ (λ x y, ⟦regular_sequence.add x y⟧)
-  begin
-    simp only [quotient.eq],
-    intros a₁ b₁ a₂ b₂ a₁_eq_a₂ b₁_eq_b₂,
-    rw equivalent_iff at *,
-    unfold add,
-    intros j j_pos,
-    have two_j_pos : 0 < 2*j,
-    {
-      simpa,
-    },
-    specialize a₁_eq_a₂ (2*j) two_j_pos,
-    specialize b₁_eq_b₂ (2*j) two_j_pos,
-    obtain ⟨N, hN⟩ := a₁_eq_a₂,
-    obtain ⟨M, hM⟩ := b₁_eq_b₂,
-    use max N M,
-    intros n n_ge_max,
-    specialize hN (2*n),
-    specialize hM (2*n),
-    simp only [fn_apply, subtype.val_eq_coe],
-    sorry,
-  end
+
 
 

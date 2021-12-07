@@ -2,6 +2,7 @@ import reals
 import regular_sequence
 import lim_zero
 
+-- for mathlib
 lemma max_eq(a b: ℚ): max a b = (a + b + abs (a - b)) / 2 :=
 begin
   by_cases h: a ≤ b,
@@ -36,7 +37,7 @@ def regular_sequence.max(a b: regular_sequence): regular_sequence :=
     simp,
     repeat {rw max_eq},
     calc |(a n + b n + |a n - b n|) / 2 - (a m + b m + |a m - b m|) / 2|
-      = |((a n - a m) + (b n - b m) + |a n - b n| - |a m - b m|)/2 | : by ring
+      = |((a n - a m) + (b n - b m) + |a n - b n| - |a m - b m|)/2 | : by ring_nf
      ... ≤ (n)⁻¹ + (m)⁻¹ : by sorry
   end }
 
@@ -72,12 +73,14 @@ def reals.max: real → real → real :=
         ... ≤ (|a₁ m - b₁ m| + |a₂ m - b₂ m| + | |a₁ m - b₁ m| + |a₂ m - b₂ m| + |b₁ m - b₂ m| - |b₁ m - b₂ m| |) / 2 : by sorry
         ... = (|a₁ m - b₁ m| + |a₂ m - b₂ m| + | |a₁ m - b₁ m| + |a₂ m - b₂ m| |) / 2 : by sorry
         ... = (|a₁ m - b₁ m| + |a₂ m - b₂ m| + |a₁ m - b₁ m| + |a₂ m - b₂ m|) / 2 : by sorry
-        ... = |a₁ m - b₁ m| + |a₂ m - b₂ m| : by sorry
+        ... = |a₁ m - b₁ m| + |a₂ m - b₂ m| : by ring_nf
         ... ≤ (2*n: ℚ)⁻¹ + (2*n: ℚ)⁻¹ : by sorry
         ... = (n: ℚ)⁻¹ : by 
         begin 
           ring_nf,
-          sorry,
+          rw mul_inv₀,
+          rw ← mul_assoc,
+          simp only [one_mul, mul_inv_cancel, ne.def, not_false_iff, bit0_eq_zero, one_ne_zero],
          end,
     end
 
